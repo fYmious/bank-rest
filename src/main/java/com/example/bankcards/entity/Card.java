@@ -1,7 +1,16 @@
 package com.example.bankcards.entity;
 
+import jakarta.persistence.*;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import lombok.*;
+
 @Entity
 @Table(name = "cards")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Card {
 
     @Id
@@ -24,52 +33,4 @@ public class Card {
 
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal balance;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getCardNumberEncrypted() {
-        return cardNumberEncrypted;
-    }
-
-    public void setCardNumberEncrypted(String cardNumberEncrypted) {
-        this.cardNumberEncrypted = cardNumberEncrypted;
-    }
-
-    public User getOwner() {
-        return owner;
-    }
-
-    public void setOwner(User owner) {
-        this.owner = owner;
-    }
-
-    public LocalDate getExpiryDate() {
-        return expiryDate;
-    }
-
-    public void setExpiryDate(LocalDate expiryDate) {
-        this.expiryDate = expiryDate;
-    }
-
-    public CardStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(CardStatus status) {
-        this.status = status;
-    }
-
-    public BigDecimal getBalance() {
-        return balance;
-    }
-
-    public void setBalance(BigDecimal balance) {
-        this.balance = balance;
-    }
 }
