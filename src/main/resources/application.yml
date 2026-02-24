@@ -19,3 +19,7 @@ app:
     expiration: 86400000
   card:
     encryption-key: 1234567890123456
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
