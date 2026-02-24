@@ -1,0 +1,61 @@
+name: Tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: maven
+
+      - name: Start PostgreSQL container
+        run: |
+          docker run -d \
+            --name pg-test-${{ gitea.run_id }} \
+            -e POSTGRES_DB=bankcards_test \
+            -e POSTGRES_USER=postgres \
+            -e POSTGRES_PASSWORD=postgres \
+            -p 5433:5432 \
+            postgres:15-alpine
+          for i in $(seq 1 30); do
+            docker exec pg-test-${{ gitea.run_id }} pg_isready -U postgres && break
+            echo "Waiting for postgres... ($i)"
+            sleep 2
+          done
+
+      - name: Run tests
+        run: mvn test --no-transfer-progress
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5433/bankcards_test
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: postgres
+          SPRING_LIQUIBASE_ENABLED: false
+          SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+          APP_JWT_SECRET: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+          APP_JWT_EXPIRATION: 86400000
+          APP_CARD_ENCRYPTION_KEY: 1234567890123456
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results
+          path: target/surefire-reports/
+
+      - name: Stop PostgreSQL container
+        if: always()
+        run: docker rm -f pg-test-${{ gitea.run_id }} || true
