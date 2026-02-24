@@ -1,4 +1,9 @@
-# Система управления банковскими картами
+---
+gitea: none
+include_toc: true
+---
+
+# Система управления банковскими картами [![Tests](https://git.fymio.us/me/bank-rest/actions/workflows/test.yml/badge.svg)](https://git.fymio.us/me/bank-rest/actions)
 
 REST API на Spring Boot для управления банковскими картами с JWT авторизацией, шифрованием номеров карт и ролевым доступом.
 
