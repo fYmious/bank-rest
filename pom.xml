@@ -16,6 +16,7 @@
     <groupId>com.example</groupId>
     <artifactId>bankcards</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <name>bankcards</name>
     <description>Bank Card Management System</description>
 
     <properties>

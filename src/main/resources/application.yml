@@ -3,10 +3,14 @@ spring:
     url: jdbc:postgresql://localhost:5432/bankcards
     username: postgres
     password: postgres
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: validate
     show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
   liquibase:
     change-log: classpath:db/migration/changelog-master.xml
 
@@ -23,3 +27,5 @@ app:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs

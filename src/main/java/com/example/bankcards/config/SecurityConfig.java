@@ -4,6 +4,7 @@ import com.example.bankcards.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -43,6 +44,8 @@ public class SecurityConfig {
                         "/swagger-ui.html"
                     )
                     .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/admin/**")
+                    .hasAuthority("ROLE_ADMIN")
                     .requestMatchers("/api/admin/**")
                     .hasAuthority("ROLE_ADMIN")
                     .anyRequest()

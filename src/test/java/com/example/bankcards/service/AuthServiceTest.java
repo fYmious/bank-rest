@@ -76,6 +76,7 @@ class AuthServiceTest {
             .build();
         when(userRepository.save(any())).thenReturn(savedUser);
 
+        // UserDetailsService вернёт реальный объект UserDetails с нужным username
         UserDetails mockDetails =
             org.springframework.security.core.userdetails.User.withUsername(
                 "newuser"

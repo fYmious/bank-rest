@@ -1,6 +1,7 @@
 package com.example.bankcards.entity;
 
 import jakarta.persistence.*;
+import java.util.List;
 import lombok.*;
 
 @Entity
@@ -27,4 +28,11 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
+
+    @OneToMany(
+        mappedBy = "owner",
+        cascade = CascadeType.ALL,
+        fetch = FetchType.LAZY
+    )
+    private List<Card> cards;
 }

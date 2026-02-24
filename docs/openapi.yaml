@@ -1,0 +1,300 @@
+openapi: 3.0.3
+info:
+  title: Bank Card Management API
+  description: REST API for managing bank cards with JWT authentication
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+security:
+  - BearerAuth: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    RegisterRequest:
+      type: object
+      required: [username, email, password]
+      properties:
+        username: { type: string, minLength: 3, maxLength: 50 }
+        email: { type: string, format: email }
+        password: { type: string, minLength: 6 }
+
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username: { type: string }
+        password: { type: string }
+
+    AuthResponse:
+      type: object
+      properties:
+        token: { type: string }
+        username: { type: string }
+        role: { type: string }
+
+    CardResponse:
+      type: object
+      properties:
+        id: { type: integer }
+        maskedNumber: { type: string, example: "**** **** **** 1234" }
+        ownerUsername: { type: string }
+        expiryDate: { type: string, format: date }
+        status: { type: string, enum: [ACTIVE, BLOCKED, EXPIRED] }
+        balance: { type: number }
+
+    CreateCardRequest:
+      type: object
+      required: [cardNumber, ownerId, expiryDate, initialBalance]
+      properties:
+        cardNumber: { type: string, pattern: '^\d{16}$' }
+        ownerId: { type: integer }
+        expiryDate: { type: string, format: date }
+        initialBalance: { type: number, minimum: 0 }
+
+    TransferRequest:
+      type: object
+      required: [fromCardId, toCardId, amount]
+      properties:
+        fromCardId: { type: integer }
+        toCardId: { type: integer }
+        amount: { type: number, minimum: 0.01 }
+
+    UserResponse:
+      type: object
+      properties:
+        id: { type: integer }
+        username: { type: string }
+        email: { type: string }
+        role: { type: string, enum: [ROLE_USER, ROLE_ADMIN] }
+
+    ErrorResponse:
+      type: object
+      properties:
+        status: { type: integer }
+        message: { type: string }
+        timestamp: { type: string, format: date-time }
+
+paths:
+  /api/auth/register:
+    post:
+      tags: [Authentication]
+      summary: Register a new user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RegisterRequest" }
+      responses:
+        "200":
+          description: Registered successfully
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthResponse" }
+        "400":
+          description: Validation error or duplicate username/email
+
+  /api/auth/login:
+    post:
+      tags: [Authentication]
+      summary: Login and get JWT token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LoginRequest" }
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthResponse" }
+        "401":
+          description: Invalid credentials
+
+  /api/cards:
+    get:
+      tags: [Cards - User]
+      summary: Get own cards (with optional status filter and pagination)
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string, enum: [ACTIVE, BLOCKED, EXPIRED] }
+        - name: page
+          in: query
+          schema: { type: integer, default: 0 }
+        - name: size
+          in: query
+          schema: { type: integer, default: 10 }
+      responses:
+        "200":
+          description: Paginated list of user's cards
+
+  /api/cards/{id}:
+    get:
+      tags: [Cards - User]
+      summary: Get a specific card (must be owner)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Card details
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CardResponse" }
+        "403":
+          description: Access denied
+        "404":
+          description: Card not found
+
+  /api/cards/{id}/request-block:
+    post:
+      tags: [Cards - User]
+      summary: Request to block own card
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Block requested
+
+  /api/cards/transfer:
+    post:
+      tags: [Cards - User]
+      summary: Transfer between own cards
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TransferRequest" }
+      responses:
+        "200":
+          description: Transfer successful
+        "400":
+          description: Insufficient balance or inactive card
+
+  /api/admin/cards:
+    get:
+      tags: [Cards - Admin]
+      summary: Get all cards
+      responses:
+        "200":
+          description: All cards paginated
+    post:
+      tags: [Cards - Admin]
+      summary: Create a new card
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateCardRequest" }
+      responses:
+        "201":
+          description: Card created
+
+  /api/admin/cards/{id}/block:
+    patch:
+      tags: [Cards - Admin]
+      summary: Block a card
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Card blocked
+
+  /api/admin/cards/{id}/activate:
+    patch:
+      tags: [Cards - Admin]
+      summary: Activate a card
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Card activated
+
+  /api/admin/cards/{id}:
+    delete:
+      tags: [Cards - Admin]
+      summary: Delete a card
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Deleted
+
+  /api/admin/users:
+    get:
+      tags: [Users - Admin]
+      summary: Get all users
+      responses:
+        "200":
+          description: Paginated list of users
+
+  /api/admin/users/{id}:
+    get:
+      tags: [Users - Admin]
+      summary: Get user by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: User details
+    delete:
+      tags: [Users - Admin]
+      summary: Delete user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Deleted
+
+  /api/admin/users/{id}/role:
+    patch:
+      tags: [Users - Admin]
+      summary: Update user role
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role: { type: string, enum: [ROLE_USER, ROLE_ADMIN] }
+      responses:
+        "200":
+          description: Role updated

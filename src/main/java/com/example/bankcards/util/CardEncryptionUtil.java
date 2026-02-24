@@ -49,8 +49,7 @@ public class CardEncryptionUtil {
         if (cardNumber == null || cardNumber.length() < 4) {
             return "****";
         }
-        return (
-            "**** **** **** " + cardNumber.substring(cardNumber.length() - 4)
-        );
+        String lastFour = cardNumber.substring(cardNumber.length() - 4);
+        return "**** **** **** " + lastFour;
     }
 }

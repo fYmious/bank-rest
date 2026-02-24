@@ -53,6 +53,7 @@ class AuthControllerTest {
     @WithMockUser
     void login_invalidBody_returns400() throws Exception {
         LoginRequest req = new LoginRequest();
+        // username и password — null, должна сработать валидация @NotBlank
 
         mockMvc
             .perform(

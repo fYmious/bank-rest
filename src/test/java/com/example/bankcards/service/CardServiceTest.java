@@ -1,6 +1,5 @@
 package com.example.bankcards.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -88,7 +87,7 @@ class CardServiceTest {
         );
 
         var response = cardService.createCard(req);
-        assertThat(response).isNotNull();
+        assert response != null;
         verify(cardRepository, times(1)).save(any());
     }
 
@@ -141,7 +140,7 @@ class CardServiceTest {
         );
 
         var response = cardService.blockCard(1L);
-        assertThat(response).isNotNull();
+        assert response != null;
         verify(cardRepository).save(any());
     }
 }

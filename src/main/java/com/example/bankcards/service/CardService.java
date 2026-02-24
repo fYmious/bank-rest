@@ -43,7 +43,8 @@ public class CardService {
             .status(CardStatus.ACTIVE)
             .balance(request.getInitialBalance())
             .build();
-        return toResponse(cardRepository.save(card));
+        card = cardRepository.save(card);
+        return toResponse(card);
     }
 
     public Page<CardResponse> getAllCards(Pageable pageable) {
